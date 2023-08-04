@@ -43,8 +43,7 @@ export class PostsService {
 
     async create(createPostDto: CreatePostDto, currentUser: User) {
         const post = await this.db.post.create({ data: { ...createPostDto, userId: currentUser.id } });
-        const user = await this.db.user.findUnique({ where: { id: currentUser.id } });
-        const postsCount = user.postsCount + 1;
+        const postsCount = currentUser.postsCount + 1;
         await this.db.user.update({ where: { id: currentUser.id }, data: { postsCount } });
         return post;
     }
@@ -56,8 +55,7 @@ export class PostsService {
         const post = await this.db.post.create({
             data: { ...createPostDto, userId: currentUser.id, postId: parentPostId }
         });
-        const user = await this.db.user.findUnique({ where: { id: currentUser.id } });
-        const postsCount = user.postsCount + 1;
+        const postsCount = currentUser.postsCount + 1;
         await this.db.user.update({ where: { id: currentUser.id }, data: { postsCount } });
         return post
     }
