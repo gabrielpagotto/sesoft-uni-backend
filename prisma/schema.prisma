@@ -39,11 +39,11 @@ model Post {
 
     // Replies relation
     replies Post[]  @relation(name: "reply_to_post")
-    Post    Post?   @relation(fields: [postId], references: [id], name: "reply_to_post")
+    Post    Post?   @relation(fields: [postId], references: [id], name: "reply_to_post", onDelete: Cascade)
     postId  String? @map("post_id")
 
     // User relation
-    user   User?   @relation(fields: [userId], references: [id])
+    user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId String? @map("user_id")
 
     likes      Likes[]
@@ -53,9 +53,9 @@ model Post {
 }
 
 model Likes {
-    user   User   @relation(fields: [userId], references: [id])
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId String @map("user_id")
-    post   Post   @relation(fields: [postId], references: [id])
+    post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
     postId String @map("post_id")
 
     createdAt DateTime @default(now()) @map("created_at")
@@ -66,9 +66,9 @@ model Likes {
 }
 
 model Follow {
-    userFollowed    User   @relation("user_followed", fields: [userFollowedId], references: [id])
+    userFollowed    User   @relation("user_followed", fields: [userFollowedId], references: [id], onDelete: Cascade)
     userFollowedId  String @map("user_followed_id")
-    userFollowing   User   @relation("user_following", fields: [userFollowingId], references: [id])
+    userFollowing   User   @relation("user_following", fields: [userFollowingId], references: [id], onDelete: Cascade)
     userFollowingId String @map("user_following_id")
 
     createdAt DateTime @default(now()) @map("created_at")
