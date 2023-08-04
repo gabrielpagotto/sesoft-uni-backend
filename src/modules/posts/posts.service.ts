@@ -13,15 +13,9 @@ export class PostsService {
             throw new NotFoundException("Post not found")
         }
         const post = await this.db.post.findUnique({
-            where: { id }, include: {
-                user: {
-                    select: {
-                        id: true,
-                        firstName: true,
-                        lastName: true,
-                        username: true,
-                    }
-                },
+            where: { id },
+            include: {
+                user: { select: { id: true, firstName: true, lastName: true, username: true } },
                 replies: {
                     select: {
                         id: true,
@@ -29,29 +23,12 @@ export class PostsService {
                         createdAt: true,
                         updatedAt: true,
                         likesCount: true,
-                        user: {
-                            select: {
-                                id: true,
-                                firstName: true,
-                                lastName: true,
-                                username: true,
-                            }
-                        },
-                        likes: {
-                            where: {
-                                userId: currentUser.id,
-                            },
-                        }
+                        user: { select: { id: true, firstName: true, lastName: true, username: true } },
+                        likes: { where: { userId: currentUser.id } }
                     },
-                    orderBy: {
-                        createdAt: 'asc',
-                    }
+                    orderBy: { createdAt: 'asc' }
                 },
-                likes: {
-                    where: {
-                        userId: currentUser.id,
-                    }
-                }
+                likes: { where: { userId: currentUser.id } }
             },
         });
         const userLiked = post.likes.length > 0;
