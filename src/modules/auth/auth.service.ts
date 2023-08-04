@@ -1,18 +1,44 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { SigninAuthDto } from './dto/signin-auth.dto';
 import { SignupAuthDto } from './dto/signup-auth.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { encriptPassword } from 'src/helpers/password.helper';
+import { encriptPassword, verifyPassword } from 'src/helpers/password.helper';
 import { omitObjectFields as deleteObjectFields } from 'src/helpers/object.helper';
 import { validateUsername } from 'src/helpers/validators.helper';
+import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
 
-    constructor(private db: PrismaService) { }
+    constructor(private db: PrismaService, private jwtService: JwtService) { }
 
-    signin(signinAuthDto: SigninAuthDto) {
+    async validateUserCredentials(email: string, password: string): Promise<User | null> {
+        const user = await this.db.user.findFirst({ where: { email } });
+        if (!user) {
+            return null;
+        }
+        if (!(await verifyPassword(password, user.hashedPassword))) {
+            return null;
+        }
+        return user;
+    }
 
+
+    async signin(signinAuthDto: SigninAuthDto) {
+        const user = await this.validateUserCredentials(
+            signinAuthDto.email,
+            signinAuthDto.password
+        );
+        if (!user) {
+            throw new UnauthorizedException('Username or password is invalid.');
+        }
+        return {
+            token: this.jwtService.sign({
+                id: user.id,
+                email: user.email,
+            }),
+        };
     }
 
     async signup(signupAuthDto: SignupAuthDto) {
