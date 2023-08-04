@@ -11,8 +11,8 @@ export class PostsController {
     constructor(private readonly postsService: PostsService) { }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.postsService.findOne(id)
+    findOne(@Param('id') id: string, @CurrentUser() currentUser: User) {
+        return this.postsService.findOne(id, currentUser)
     }
 
     @Post()

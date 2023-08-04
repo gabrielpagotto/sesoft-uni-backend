@@ -2,21 +2,66 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { User } from '@prisma/client';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { omitObjectFields } from 'src/helpers/object.helper';
 
 @Injectable()
 export class PostsService {
     constructor(private db: PrismaService) { }
 
-    async findOne(id: string) {
+    async findOne(id: string, currentUser: User) {
         if (!(await this.db.post.findUnique({ where: { id } }))) {
             throw new NotFoundException("Post not found")
         }
-        return this.db.post.findUnique({
+        const post = await this.db.post.findUnique({
             where: { id }, include: {
-                user: true,
-                replies: true,
-            }
+                user: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        username: true,
+                    }
+                },
+                replies: {
+                    select: {
+                        id: true,
+                        content: true,
+                        createdAt: true,
+                        updatedAt: true,
+                        likesCount: true,
+                        user: {
+                            select: {
+                                id: true,
+                                firstName: true,
+                                lastName: true,
+                                username: true,
+                            }
+                        },
+                        likes: {
+                            where: {
+                                userId: currentUser.id,
+                            },
+                        }
+                    },
+                    orderBy: {
+                        createdAt: 'asc',
+                    }
+                },
+                likes: {
+                    where: {
+                        userId: currentUser.id,
+                    }
+                }
+            },
         });
+        const userLiked = post.likes.length > 0;
+        const replies = post.replies.map(e => {
+            const postObj = { ...e, userLiked: e.likes.length > 0 };
+            omitObjectFields(postObj, ['likes']);
+            return postObj;
+        })
+        const object: any = omitObjectFields(post, ['likes', 'replies']);
+        return { ...object, replies, userLiked };
     }
 
     async create(createPostDto: CreatePostDto, currentUser: User) {
@@ -24,7 +69,7 @@ export class PostsService {
         const user = await this.db.user.findUnique({ where: { id: currentUser.id } });
         const postsCount = user.postsCount + 1;
         await this.db.user.update({ where: { id: currentUser.id }, data: { postsCount } });
-        return post
+        return post;
     }
 
     async reply(createPostDto: CreatePostDto, currentUser: User, parentPostId: string) {
