@@ -20,5 +20,59 @@ model User {
     createdAt      DateTime @default(now()) @map("created_at")
     updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
 
+    posts           Post[]
+    likes           Likes[]
+    followingsCount Int      @default(0) @map("followings_count")
+    followersCount  Int      @default(0) @map("followers_count")
+    following       Follow[] @relation("user_following")
+    followed        Follow[] @relation("user_followed")
+
     @@map("users")
+}
+
+model Post {
+    id        String   @id @unique @default(uuid())
+    content   String
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+    // Replies relation
+    replies Post[]  @relation(name: "reply_to_post")
+    Post    Post?   @relation(fields: [postId], references: [id], name: "reply_to_post")
+    postId  String? @map("post_id")
+
+    // User relation
+    user   User?   @relation(fields: [userId], references: [id])
+    userId String? @map("user_id")
+
+    likes      Likes[]
+    likesCount Int     @default(0) @map("likes_count")
+
+    @@map("posts")
+}
+
+model Likes {
+    user   User   @relation(fields: [userId], references: [id])
+    userId String @map("user_id")
+    post   Post   @relation(fields: [postId], references: [id])
+    postId String @map("post_id")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+    @@id([userId, postId])
+    @@map("likes")
+}
+
+model Follow {
+    userFollowed    User   @relation("user_followed", fields: [userFollowedId], references: [id])
+    userFollowedId  String @map("user_followed_id")
+    userFollowing   User   @relation("user_following", fields: [userFollowingId], references: [id])
+    userFollowingId String @map("user_following_id")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+    @@id([userFollowedId, userFollowingId])
+    @@map("follows")
 }
