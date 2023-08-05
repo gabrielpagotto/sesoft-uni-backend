@@ -4,9 +4,10 @@ import { AuthModule } from './auth/auth.module';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { APP_PIPE } from '@nestjs/core';
 import { PostsModule } from './posts/posts.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-    imports: [AuthModule, PostsModule],
+    imports: [AuthModule, PostsModule, UsersModule],
     controllers: [],
     providers: [
         PrismaService,
