@@ -71,6 +71,22 @@ export class UsersService {
             where: { id: userWhoWillUnfollow.id },
             data: { followingsCount: userWhoWillUnfollowFollowersCount }
         });
-        return { followed: true };
+        return { unfollowed: true };
+    }
+
+    async followers(currentUser: User) {
+        const followers = await this.db.follow.findMany({
+            where: { userFollowedId: currentUser.id },
+            include: { userFollowing: { select: { id: true, firstName: true, lastName: true, email: true } } }
+        });
+        return followers.map(e => e.userFollowing);
+    }
+
+    async following(currentUser: User) {
+        const following = await this.db.follow.findMany({
+            where: { userFollowingId: currentUser.id },
+            include: { userFollowed: { select: { id: true, firstName: true, lastName: true, email: true } } }
+        });
+        return following.map(e => e.userFollowed);
     }
 }

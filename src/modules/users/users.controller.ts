@@ -1,4 +1,4 @@
-import { Controller, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { User } from '@prisma/client';
@@ -19,5 +19,17 @@ export class UsersController {
     @HttpCode(HttpStatus.OK)
     unfollow(@Param('id') id: string, @CurrentUser() currentUser: User) {
         return this.usersService.unfollow(id, currentUser)
+    }
+
+    @Get('me/followers')
+    @HttpCode(HttpStatus.OK)
+    followers(@CurrentUser() currentUser: User) {
+        return this.usersService.followers(currentUser)
+    }
+
+    @Get('me/following')
+    @HttpCode(HttpStatus.OK)
+    following(@CurrentUser() currentUser: User) {
+        return this.usersService.following(currentUser)
     }
 }
