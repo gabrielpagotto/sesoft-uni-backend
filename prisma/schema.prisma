@@ -22,6 +22,7 @@ model User {
 
     posts           Post[]
     likes           Likes[]
+    likesCount      Int      @default(0) @map("likes_count")
     postsCount      Int      @default(0) @map("posts_count")
     followingsCount Int      @default(0) @map("followings_count")
     followersCount  Int      @default(0) @map("followers_count")

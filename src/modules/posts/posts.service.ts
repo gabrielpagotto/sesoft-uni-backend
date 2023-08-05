@@ -69,8 +69,11 @@ export class PostsService {
             throw new BadRequestException("The current user has already liked this post");
         }
         await this.db.likes.create({ data: { postId: id, userId: currentUser.id } });
-        const likesCount = post.likesCount + 1;
-        await this.db.post.update({ where: { id }, data: { likesCount } });
+        const user = await this.db.user.findUnique({ where: { id: currentUser.id } });
+        const postLikesCount = post.likesCount + 1;
+        const userLikesCount = user.likesCount + 1;
+        await this.db.post.update({ where: { id }, data: { likesCount: postLikesCount } });
+        await this.db.user.update({ where: { id: currentUser.id }, data: { likesCount: userLikesCount } });
         return { liked: true };
     }
 
@@ -85,8 +88,11 @@ export class PostsService {
         await this.db.likes.deleteMany({
             where: { AND: [{ postId: id }, { userId: currentUser.id }] }
         });
-        const likesCount = post.likesCount - 1;
-        await this.db.post.update({ where: { id }, data: { likesCount } });
+        const user = await this.db.user.findUnique({ where: { id: currentUser.id } });
+        const postLikesCount = post.likesCount - 1;
+        const userLikesCount = user.likesCount - 1;
+        await this.db.post.update({ where: { id }, data: { likesCount: postLikesCount } });
+        await this.db.user.update({ where: { id: currentUser.id }, data: { likesCount: userLikesCount } });
         return { unliked: true };
     }
 }
