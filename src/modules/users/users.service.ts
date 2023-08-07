@@ -77,7 +77,16 @@ export class UsersService {
     async followers(currentUser: User) {
         const followers = await this.db.follow.findMany({
             where: { userFollowedId: currentUser.id },
-            include: { userFollowing: { select: { id: true, firstName: true, lastName: true, email: true } } }
+            include: {
+                userFollowing: {
+                    select: {
+                        id: true,
+                        email: true,
+                        username: true,
+                        profile: { select: { displayName: true, bio: true, icon: true } }
+                    }
+                }
+            }
         });
         return followers.map(e => e.userFollowing);
     }
@@ -85,7 +94,16 @@ export class UsersService {
     async following(currentUser: User) {
         const following = await this.db.follow.findMany({
             where: { userFollowingId: currentUser.id },
-            include: { userFollowed: { select: { id: true, firstName: true, lastName: true, email: true } } }
+            include: {
+                userFollowed: {
+                    select: {
+                        id: true,
+                        email: true,
+                        username: true,
+                        profile: { select: { displayName: true, bio: true, icon: true } }
+                    }
+                }
+            }
         });
         return following.map(e => e.userFollowed);
     }

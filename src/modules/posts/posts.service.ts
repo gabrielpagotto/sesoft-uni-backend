@@ -15,7 +15,7 @@ export class PostsService {
         const post = await this.db.post.findUnique({
             where: { id },
             include: {
-                user: { select: { id: true, firstName: true, lastName: true, username: true }, include: {} },
+                user: { select: { id: true, username: true, profile: { select: { id: true, displayName: true } } } },
                 replies: {
                     select: {
                         id: true,
@@ -23,7 +23,7 @@ export class PostsService {
                         createdAt: true,
                         updatedAt: true,
                         likesCount: true,
-                        user: { select: { id: true, firstName: true, lastName: true, username: true } },
+                        user: { select: { id: true, username: true, profile: { select: { id: true, displayName: true } } } },
                         likes: { where: { userId: currentUser.id } }
                     },
                     orderBy: { createdAt: 'asc' }
@@ -42,8 +42,9 @@ export class PostsService {
     }
 
     async create(createPostDto: CreatePostDto, currentUser: User) {
+        const user = await this.db.user.findUnique({ where: { id: currentUser.id } })
         const post = await this.db.post.create({ data: { ...createPostDto, userId: currentUser.id } });
-        const postsCount = currentUser.postsCount + 1;
+        const postsCount = user.postsCount + 1;
         await this.db.user.update({ where: { id: currentUser.id }, data: { postsCount } });
         return post;
     }
@@ -52,10 +53,11 @@ export class PostsService {
         if (!(await this.db.post.findUnique({ where: { id: parentPostId } }))) {
             throw new NotFoundException("Post not found")
         }
+        const user = await this.db.user.findUnique({ where: { id: currentUser.id } })
         const post = await this.db.post.create({
             data: { ...createPostDto, userId: currentUser.id, postId: parentPostId }
         });
-        const postsCount = currentUser.postsCount + 1;
+        const postsCount = user.postsCount + 1;
         await this.db.user.update({ where: { id: currentUser.id }, data: { postsCount } });
         return post
     }
