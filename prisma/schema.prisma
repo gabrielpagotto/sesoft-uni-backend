@@ -78,3 +78,26 @@ model Follow {
     @@id([userFollowedId, userFollowingId])
     @@map("follows")
 }
+
+model Storage {
+    id           String    @id @unique @default(uuid())
+    url          String
+    createdAt    DateTime  @default(now()) @map("created_at")
+    updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
+    profileIcons Profile[]
+
+    @@map("storage")
+}
+
+model Profile {
+    id         String   @id @unique @default(uuid())
+    bio        String?  @map("description")
+    websiteUrl String?  @map("website_url")
+    createdAt  DateTime @default(now()) @map("created_at")
+    updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+    icon          Storage @relation(fields: [iconStorageId], references: [id])
+    iconStorageId String  @map("icon_storage_id")
+
+    @@map("profile")
+}
