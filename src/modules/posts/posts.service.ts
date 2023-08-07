@@ -15,7 +15,7 @@ export class PostsService {
         const post = await this.db.post.findUnique({
             where: { id },
             include: {
-                user: { select: { id: true, firstName: true, lastName: true, username: true } },
+                user: { select: { id: true, firstName: true, lastName: true, username: true }, include: {} },
                 replies: {
                     select: {
                         id: true,
