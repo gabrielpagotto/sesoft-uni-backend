@@ -7,6 +7,7 @@ import { PostsModule } from './posts/posts.module';
 import { UsersModule } from './users/users.module';
 import { TimelineModule } from './timeline/timeline.module';
 import { StorageService } from './storage/storage.service';
+import { NotificationsService } from './notifications/notifications.service';
 
 @Module({
     imports: [AuthModule, PostsModule, UsersModule, TimelineModule],
@@ -17,7 +18,8 @@ import { StorageService } from './storage/storage.service';
             provide: APP_PIPE,
             useClass: ZodValidationPipe,
         },
-        StorageService
+        StorageService,
+        NotificationsService
     ],
 })
 export class AppModule { }
