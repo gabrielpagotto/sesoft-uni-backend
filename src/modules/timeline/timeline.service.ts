@@ -8,18 +8,17 @@ export class TimelineService {
 
     async timeline(currentUser: User) {
         return await this.db.$queryRaw`
-            SELECT p.*
-            FROM posts p
-            JOIN follows f ON p.user_id = f.user_followed_id
-            WHERE f.user_following_id = ${currentUser.id}
+          SELECT P.* FROM posts P
+            JOIN follows f ON P.user_id = f.user_following_id
+            WHERE f.user_followed_id = ${currentUser.id}
             AND p.created_at >= (
-                SELECT f2.created_at
-                FROM follows f2
-                WHERE f2.user_following_id = ${currentUser.id}
-                AND f2.user_followed_id = p.user_id
+                    SELECT f2.created_at
+                    FROM follows f2
+                    WHERE f2.user_followed_id = ${currentUser.id}
+                    AND f2.user_following_id = p.user_id
             )
-            AND p.post_id IS NULL
-            ORDER BY p.created_at DESC;
+            AND P.post_id IS NULL
+            ORDER BY P.created_at DESC;
         `
     }
 }
