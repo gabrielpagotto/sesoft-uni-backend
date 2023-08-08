@@ -43,7 +43,7 @@ export class PostsService {
     }
 
     async create(files: Array<Express.Multer.File>, createPostDto: CreatePostDto, currentUser: User) {
-        const uploadedFiles = this.storage.uploadFilesAndGetStorageRecords([])
+        const uploadedFiles = this.storage.uploadFilesAndGetStorageRecords(files)
         // @TODO: Link the `uploadedFiles` with the post that will be created
 
         const user = await this.db.user.findUnique({ where: { id: currentUser.id } })
