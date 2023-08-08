@@ -3,10 +3,11 @@ import { User } from '@prisma/client';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { omitObjectFields } from 'src/helpers/object.helper';
+import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class PostsService {
-    constructor(private db: PrismaService) { }
+    constructor(private db: PrismaService, private storage: StorageService) { }
 
     async findOne(id: string, currentUser: User) {
         if (!(await this.db.post.findUnique({ where: { id } }))) {
@@ -41,7 +42,10 @@ export class PostsService {
         return { ...object, replies, userLiked };
     }
 
-    async create(createPostDto: CreatePostDto, currentUser: User) {
+    async create(files: Array<Express.Multer.File>, createPostDto: CreatePostDto, currentUser: User) {
+        const uploadedFiles = this.storage.uploadFilesAndGetStorageRecords([])
+        // @TODO: Link the `uploadedFiles` with the post that will be created
+
         const user = await this.db.user.findUnique({ where: { id: currentUser.id } })
         const post = await this.db.post.create({ data: { ...createPostDto, userId: currentUser.id } });
         const postsCount = user.postsCount + 1;
