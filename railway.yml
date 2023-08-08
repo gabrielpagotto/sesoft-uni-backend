@@ -1,0 +1,10 @@
+version: 1
+services:
+  web:
+    env:
+      DATABASE_URL: "@prisma:DATABASE_URL"
+    build:
+      env: production
+    routes:
+      - src: /
+        dest: "web:8080"
