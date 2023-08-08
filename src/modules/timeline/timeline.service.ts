@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
+import { ApiResponse } from '@nestjs/swagger';
 
 @Injectable()
 export class TimelineService {
     constructor(private db: PrismaService) { }
 
+    @ApiResponse({ status: HttpStatus.OK, description: 'Realiza a montagem da timeline do usuário atual.' })
     async timeline(currentUser: User) {
         return await this.db.$queryRaw`
           SELECT P.* FROM posts P
