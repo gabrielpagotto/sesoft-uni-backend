@@ -1,10 +1,11 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { User } from '@prisma/client';
 import { JwtGuard } from 'src/guards/jwt.guard';
 import { ApiResponse } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('posts')
 @UseGuards(JwtGuard)
@@ -20,8 +21,9 @@ export class PostsController {
 
     @Post()
     @ApiResponse({ status: HttpStatus.OK, description: 'Cria uma nova postagem.' })
-    create(@Body() createPostDto: CreatePostDto, @CurrentUser() currentUser: User) {
-        return this.postsService.create(createPostDto, currentUser)
+    @UseInterceptors(FilesInterceptor('files'))
+    create(@UploadedFiles() files: Array<Express.Multer.File>, @Body() createPostDto: CreatePostDto, @CurrentUser() currentUser: User) {
+        return this.postsService.create(files, createPostDto, currentUser)
     }
 
     @Post(':id/reply')
