@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
+import { DEFAULT_QUERY_SKIP, DEFAULT_QUERY_TAKE } from 'src/constants/query.constant';
 
 @Injectable()
 export class UsersService {
@@ -106,5 +107,27 @@ export class UsersService {
             }
         });
         return following.map(e => e.userFollowed);
+    }
+
+    async list(search?: string, skip?: number, take?: number) {
+        const whereCondition = {
+            OR: [
+                { username: { contains: search } },
+                { profile: { displayName: { contains: search } } }
+            ]
+        };
+        const users = await this.db.user.findMany({
+            where: whereCondition,
+            select: {
+                id: true,
+                email: true,
+                username: true,
+                profile: { select: { displayName: true, bio: true, icon: true } }
+            },
+            skip: !skip ? DEFAULT_QUERY_SKIP : Number(skip),
+            take: !take ? DEFAULT_QUERY_TAKE : Number(take),
+        });
+        const count = await this.db.user.count({ where: whereCondition });
+        return { count, result: users }
     }
 }

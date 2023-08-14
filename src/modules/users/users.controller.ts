@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { User } from '@prisma/client';
@@ -43,5 +43,11 @@ export class UsersController {
     @ApiResponse({ status: HttpStatus.OK, description: 'Busca os usuários que o usuário logado segue.' })
     following(@CurrentUser() currentUser: User) {
         return this.usersService.following(currentUser)
+    }
+
+    @Get()
+    @HttpCode(HttpStatus.OK)
+    list(@Query('search') search?: string, @Query('skip') limit?: number, @Query('take') take?: number) {
+        return this.usersService.list(search, limit, take);
     }
 }
