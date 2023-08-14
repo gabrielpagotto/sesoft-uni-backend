@@ -3,12 +3,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
 import { ApiResponse } from '@nestjs/swagger';
 import { DEFAULT_QUERY_SKIP, DEFAULT_QUERY_TAKE } from 'src/constants/query.constant';
+import { PaginatedResponse } from 'src/types/paginated-response.type';
 
 @Injectable()
 export class TimelineService {
     constructor(private db: PrismaService) { }
 
-    @ApiResponse({ status: HttpStatus.OK, description: 'Realiza a montagem da timeline do usuário atual.' })
     async timeline(currentUser: User, skip?: number, take?: number) {
         const whereCondition = {
             AND: [
@@ -40,9 +40,8 @@ export class TimelineService {
                     },
                 }
             },
-
         });
         const count = await this.db.post.count({ where: whereCondition });
-        return { count, result: timelinePosts }
+        return { count, result: timelinePosts } satisfies PaginatedResponse<typeof timelinePosts>;
     }
 }

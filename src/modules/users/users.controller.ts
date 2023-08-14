@@ -47,7 +47,7 @@ export class UsersController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    list(@Query('search') search?: string, @Query('skip') limit?: number, @Query('take') take?: number) {
-        return this.usersService.list(search, limit, take);
+    list(@Query('search') search?: string, @Query('skip') skip?: number, @Query('take') take?: number) {
+        return this.usersService.list(search, skip, take);
     }
 }

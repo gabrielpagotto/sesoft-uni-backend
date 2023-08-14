@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotAcceptableException, NotFoundExcept
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
 import { DEFAULT_QUERY_SKIP, DEFAULT_QUERY_TAKE } from 'src/constants/query.constant';
+import { PaginatedResponse } from 'src/types/paginated-response.type';
 
 @Injectable()
 export class UsersService {
@@ -128,6 +129,6 @@ export class UsersService {
             take: !take ? DEFAULT_QUERY_TAKE : Number(take),
         });
         const count = await this.db.user.count({ where: whereCondition });
-        return { count, result: users }
+        return { count, result: users } satisfies PaginatedResponse<typeof users>;
     }
 }
