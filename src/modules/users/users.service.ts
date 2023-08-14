@@ -76,9 +76,12 @@ export class UsersService {
         return { unfollowed: true };
     }
 
-    async followers(currentUser: User) {
+    async followers(currentUser: User, skip?: number, take?: number) {
+        const whereCondition = { userFollowedId: currentUser.id }
         const followers = await this.db.follow.findMany({
-            where: { userFollowedId: currentUser.id },
+            where: whereCondition,
+            skip: !skip ? DEFAULT_QUERY_SKIP : Number(skip),
+            take: !take ? DEFAULT_QUERY_TAKE : Number(take),
             include: {
                 userFollowing: {
                     select: {
@@ -90,12 +93,18 @@ export class UsersService {
                 }
             }
         });
-        return followers.map(e => e.userFollowing);
+
+        const result = followers.map(e => e.userFollowing);
+        const count = await this.db.follow.count({ where: whereCondition });
+        return { count, result } satisfies PaginatedResponse<typeof result>;
     }
 
-    async following(currentUser: User) {
+    async following(currentUser: User, skip?: number, take?: number) {
+        const whereCondition = { userFollowingId: currentUser.id };
         const following = await this.db.follow.findMany({
-            where: { userFollowingId: currentUser.id },
+            where: whereCondition,
+            skip: !skip ? DEFAULT_QUERY_SKIP : Number(skip),
+            take: !take ? DEFAULT_QUERY_TAKE : Number(take),
             include: {
                 userFollowed: {
                     select: {
@@ -107,7 +116,9 @@ export class UsersService {
                 }
             }
         });
-        return following.map(e => e.userFollowed);
+        const result = following.map(e => e.userFollowed);
+        const count = await this.db.follow.count({ where: whereCondition });
+        return { count, result } satisfies PaginatedResponse<typeof result>
     }
 
     async list(search?: string, skip?: number, take?: number) {
