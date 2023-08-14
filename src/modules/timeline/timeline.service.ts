@@ -1,7 +1,6 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
-import { ApiResponse } from '@nestjs/swagger';
 import { DEFAULT_QUERY_SKIP, DEFAULT_QUERY_TAKE } from 'src/constants/query.constant';
 import { PaginatedResponse } from 'src/types/paginated-response.type';
 
