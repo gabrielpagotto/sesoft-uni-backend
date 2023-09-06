@@ -5,11 +5,11 @@ import { z } from 'zod';
 const SigninAuthSchema = z.object({
     email: z.string().email(),
     password: z.string(),
-})
+});
 
 export class SigninAuthDto extends createZodDto(SigninAuthSchema) {
     @ApiProperty()
-    readonly email: string
+    readonly email: string;
     @ApiProperty()
-    readonly password: string
+    readonly password: string;
 }

@@ -1,19 +1,25 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { ApiResponse } from '@nestjs/swagger';
-import { DEFAULT_QUERY_SKIP, DEFAULT_QUERY_TAKE } from 'src/constants/query.constant';
+import {
+    DEFAULT_QUERY_SKIP,
+    DEFAULT_QUERY_TAKE,
+} from 'src/constants/query.constant';
 import { PaginatedResponse } from 'src/types/paginated-response.type';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class TimelineService {
-    constructor(private db: PrismaService) { }
+    constructor(private db: PrismaService) {}
 
     async timeline(currentUser: User, skip?: number, take?: number) {
         const whereCondition = {
             AND: [
                 {
-                    user: { followed: { every: { userFollowingId: currentUser.id } } }
+                    user: {
+                        followed: {
+                            every: { userFollowingId: currentUser.id },
+                        },
+                    },
                 },
                 {
                     postId: null,
@@ -36,12 +42,20 @@ export class TimelineService {
                         id: true,
                         email: true,
                         username: true,
-                        profile: { select: { displayName: true, bio: true, icon: true } }
+                        profile: {
+                            select: {
+                                displayName: true,
+                                bio: true,
+                                icon: true,
+                            },
+                        },
                     },
-                }
+                },
             },
         });
         const count = await this.db.post.count({ where: whereCondition });
-        return { count, result: timelinePosts } satisfies PaginatedResponse<typeof timelinePosts>;
+        return { count, result: timelinePosts } satisfies PaginatedResponse<
+            typeof timelinePosts
+        >;
     }
 }

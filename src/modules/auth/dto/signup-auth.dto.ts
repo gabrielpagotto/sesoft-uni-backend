@@ -7,15 +7,15 @@ const SignupAuthSchema = z.object({
     username: z.string(),
     email: z.string(),
     password: z.string(),
-})
+});
 
 export class SignupAuthDto extends createZodDto(SignupAuthSchema) {
     @ApiProperty()
-    readonly displayName: string
+    readonly displayName: string;
     @ApiProperty()
-    readonly username: string
+    readonly username: string;
     @ApiProperty()
-    readonly email: string
+    readonly email: string;
     @ApiProperty()
-    readonly password: string
+    readonly password: string;
 }

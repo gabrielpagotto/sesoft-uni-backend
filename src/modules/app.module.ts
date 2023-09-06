@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
-import { PrismaService } from './prisma/prisma.service';
-import { AuthModule } from './auth/auth.module';
-import { ZodValidationPipe } from 'nestjs-zod';
 import { APP_PIPE } from '@nestjs/core';
+import { ZodValidationPipe } from 'nestjs-zod';
+import { AuthModule } from './auth/auth.module';
+import { NotificationsService } from './notifications/notifications.service';
 import { PostsModule } from './posts/posts.module';
-import { UsersModule } from './users/users.module';
+import { PrismaService } from './prisma/prisma.service';
+import { StorageService } from './storage/storage.service';
 import { TimelineModule } from './timeline/timeline.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
     imports: [AuthModule, PostsModule, UsersModule, TimelineModule],
@@ -15,7 +17,9 @@ import { TimelineModule } from './timeline/timeline.module';
         {
             provide: APP_PIPE,
             useClass: ZodValidationPipe,
-        }
+        },
+        StorageService,
+        NotificationsService,
     ],
 })
-export class AppModule { }
+export class AppModule {}

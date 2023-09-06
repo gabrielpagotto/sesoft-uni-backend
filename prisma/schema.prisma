@@ -48,7 +48,8 @@ model Post {
     userId String? @map("user_id")
 
     likes      Likes[]
-    likesCount Int     @default(0) @map("likes_count")
+    likesCount Int       @default(0) @map("likes_count")
+    Storage    Storage[]
 
     @@map("posts")
 }
@@ -85,6 +86,8 @@ model Storage {
     createdAt    DateTime  @default(now()) @map("created_at")
     updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
     profileIcons Profile[]
+    posts        Post      @relation(fields: [postId], references: [id])
+    postId       String    @map("post_id")
 
     @@map("storage")
 }
