@@ -64,7 +64,7 @@ export class AuthService {
         }
         const hashedPassword = await encriptPassword(signupAuthDto.password);
         const userCreateData = deleteObjectFields(signupAuthDto, ['password']);
-        return await this.db.user.create({
+        const user = await this.db.user.create({
             data: {
                 email: userCreateData.email,
                 username: userCreateData.username,
@@ -73,13 +73,7 @@ export class AuthService {
                     create: { displayName: userCreateData.displayName },
                 },
             },
-            select: {
-                id: true,
-                username: true,
-                email: true,
-                createdAt: true,
-                updatedAt: true,
-            },
         });
+        return { token: this.jwtService.sign(user) };
     }
 }
