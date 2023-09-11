@@ -37,6 +37,7 @@ export class TimelineService {
                 createdAt: true,
                 updatedAt: true,
                 likesCount: true,
+                repliesCount: true,
                 user: {
                     select: {
                         id: true,
