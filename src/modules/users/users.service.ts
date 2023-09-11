@@ -212,4 +212,29 @@ export class UsersService {
             typeof users
         >;
     }
+
+    async me(currentUser: User) {
+        console.log(currentUser.id);
+        const user = await this.db.user.findUnique({
+            where: { id: currentUser.id },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                createdAt: true,
+                updatedAt: true,
+                likesCount: true,
+                postsCount: true,
+                followingsCount: true,
+                followersCount: true,
+                profile: {
+                    include: { icon: true },
+                },
+            },
+        });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return user;
+    }
 }

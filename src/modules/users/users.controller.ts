@@ -19,7 +19,7 @@ import { UsersService } from './users.service';
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
-    @Get(':id')
+    @Get('find/:id')
     @HttpCode(HttpStatus.OK)
     @ApiResponse({
         status: HttpStatus.NOT_FOUND,
@@ -65,6 +65,16 @@ export class UsersController {
     })
     unfollow(@Param('id') id: string, @CurrentUser() currentUser: User) {
         return this.usersService.unfollow(id, currentUser);
+    }
+
+    @Get('me')
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Usuário não encontrado.',
+    })
+    me(@CurrentUser() currentUser: User) {
+        return this.usersService.me(currentUser);
     }
 
     @Get('me/followers')
