@@ -19,6 +19,16 @@ import { UsersService } from './users.service';
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
+    @Get(':id')
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Usuário não encontrado.',
+    })
+    findById(@Param('id') id: string) {
+        return this.usersService.findById(id);
+    }
+
     @Post(':id/follow')
     @HttpCode(HttpStatus.OK)
     @ApiResponse({
