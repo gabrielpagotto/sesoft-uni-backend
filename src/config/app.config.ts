@@ -1,3 +1,3 @@
-export const appConfig = {
+export const appConfig = () => ({
     port: process.env.PORT,
-};
+});
