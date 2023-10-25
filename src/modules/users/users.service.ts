@@ -16,6 +16,30 @@ import { PrismaService } from '../prisma/prisma.service';
 export class UsersService {
     constructor(private db: PrismaService) {}
 
+    async findById(id: string) {
+        const user = await this.db.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                createdAt: true,
+                updatedAt: true,
+                likesCount: true,
+                postsCount: true,
+                followingsCount: true,
+                followersCount: true,
+                profile: {
+                    include: { icon: true },
+                },
+            },
+        });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return user;
+    }
+
     async follow(id: string, currentUser: User) {
         if (id === currentUser.id) {
             throw new NotAcceptableException('User cannot follow himself');
@@ -187,5 +211,30 @@ export class UsersService {
         return { count, result: users } satisfies PaginatedResponse<
             typeof users
         >;
+    }
+
+    async me(currentUser: User) {
+        console.log(currentUser.id);
+        const user = await this.db.user.findUnique({
+            where: { id: currentUser.id },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                createdAt: true,
+                updatedAt: true,
+                likesCount: true,
+                postsCount: true,
+                followingsCount: true,
+                followersCount: true,
+                profile: {
+                    include: { icon: true },
+                },
+            },
+        });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return user;
     }
 }

@@ -39,9 +39,10 @@ model Post {
     updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
     // Replies relation
-    replies Post[]  @relation(name: "reply_to_post")
-    Post    Post?   @relation(fields: [postId], references: [id], name: "reply_to_post", onDelete: Cascade)
-    postId  String? @map("post_id")
+    replies      Post[]  @relation(name: "reply_to_post")
+    repliesCount Int     @default(0) @map("replies_count")
+    Post         Post?   @relation(fields: [postId], references: [id], name: "reply_to_post", onDelete: Cascade)
+    postId       String? @map("post_id")
 
     // User relation
     user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)

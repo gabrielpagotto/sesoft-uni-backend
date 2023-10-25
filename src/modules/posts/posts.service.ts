@@ -88,7 +88,10 @@ export class PostsService {
         currentUser: User,
         parentPostId: string,
     ) {
-        if (!(await this.db.post.findUnique({ where: { id: parentPostId } }))) {
+        const parentPost = await this.db.post.findUnique({
+            where: { id: parentPostId },
+        });
+        if (!parentPost) {
             throw new NotFoundException('Post not found');
         }
         const user = await this.db.user.findUnique({
@@ -105,6 +108,10 @@ export class PostsService {
         await this.db.user.update({
             where: { id: currentUser.id },
             data: { postsCount },
+        });
+        await this.db.post.update({
+            where: { id: parentPostId },
+            data: { repliesCount: parentPost.repliesCount + 1 },
         });
         return post;
     }

@@ -37,6 +37,7 @@ export class TimelineService {
                 createdAt: true,
                 updatedAt: true,
                 likesCount: true,
+                repliesCount: true,
                 user: {
                     select: {
                         id: true,
@@ -53,9 +54,27 @@ export class TimelineService {
                 },
             },
         });
+
+        // @TODO Refatorar.
+        const posts = [];
+        for (const post of timelinePosts) {
+            const liked = await this.userLikedPost(currentUser.id, post.id);
+            posts.push({ ...post, liked });
+        }
+
         const count = await this.db.post.count({ where: whereCondition });
-        return { count, result: timelinePosts } satisfies PaginatedResponse<
-            typeof timelinePosts
-        >;
+
+        return { count, result: posts };
+    }
+
+    async userLikedPost(userId: string, postId: string): Promise<boolean> {
+        const like = await this.db.likes.findFirst({
+            where: {
+                userId: userId,
+                postId: postId,
+            },
+        });
+
+        return !!like;
     }
 }
