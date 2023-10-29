@@ -122,13 +122,15 @@ export class UsersController {
     @HttpCode(HttpStatus.OK)
     @ApiResponse({
         status: HttpStatus.OK,
-        description: 'Usuário criado com sucesso.',
+        description: 'Foto de perfil criada com sucesso.',
+    })
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Usuário não encontrado.',
     })
     @ApiResponse({
         status: HttpStatus.BAD_REQUEST,
-        description:
-            'Nome de usuário inválido.\t\n Nome de usuário já utilizado.\t\n Email do usuário já utilizado.',
-        isArray: true,
+        description: 'Foto de usuário inválida',
     })
     @UseInterceptors(FileInterceptor('file'))
     upload(
