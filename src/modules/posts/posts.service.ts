@@ -183,7 +183,7 @@ export class PostsService {
         return { unliked: true };
     }
 
-    async delete(currentUser: User, id: string) {
+    async delete(currentUser: User, id: string): Promise<{ deleted: boolean }> {
         const post = await this.findPostById(id);
 
         this.checkPostOwnership(post, currentUser);
@@ -193,7 +193,7 @@ export class PostsService {
         return { deleted: true };
     }
 
-    private async findPostById(id: string) {
+    private async findPostById(id: string): Promise<PostPersistence> {
         const post = await this.db.post.findUnique({ where: { id } });
 
         if (!post) {
@@ -203,7 +203,7 @@ export class PostsService {
         return post;
     }
 
-    private checkPostOwnership(post: PostPersistence, currentUser: User) {
+    private checkPostOwnership(post: PostPersistence, currentUser: User): void {
         if (post.userId !== currentUser.id) {
             throw new ForbiddenException(
                 'Users cannot delete posts from other users.',
@@ -211,7 +211,7 @@ export class PostsService {
         }
     }
 
-    private async deletePost(id: string) {
+    private async deletePost(id: string): Promise<void> {
         await this.db.post.delete({ where: { id } });
     }
 }
