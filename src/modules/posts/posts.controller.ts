@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    Delete,
     Get,
     HttpCode,
     HttpStatus,
@@ -105,5 +106,23 @@ export class PostsController {
     })
     unlike(@CurrentUser() currentUser: User, @Param('id') id: string) {
         return this.postsService.unlike(currentUser, id);
+    }
+
+    @Delete(':id')
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Apaga uma postagem específica.',
+    })
+    @ApiResponse({
+        status: HttpStatus.FORBIDDEN,
+        description: 'Usuário não pode apagar essa publicação.',
+    })
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Postagem não encontrada.',
+    })
+    remove(@CurrentUser() currentUser: User, @Param('id') id: string) {
+        return this.postsService.delete(currentUser, id);
     }
 }

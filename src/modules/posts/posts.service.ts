@@ -1,9 +1,10 @@
 import {
     BadRequestException,
+    ForbiddenException,
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Post as PostPersistence, User } from '@prisma/client';
 import { omitObjectFields } from 'src/helpers/object.helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -180,5 +181,37 @@ export class PostsService {
             data: { likesCount: userLikesCount },
         });
         return { unliked: true };
+    }
+
+    async delete(currentUser: User, id: string) {
+        const post = await this.findPostById(id);
+
+        this.checkPostOwnership(post, currentUser);
+
+        await this.deletePost(id);
+
+        return { deleted: true };
+    }
+
+    private async findPostById(id: string) {
+        const post = await this.db.post.findUnique({ where: { id } });
+
+        if (!post) {
+            throw new NotFoundException('Post not found');
+        }
+
+        return post;
+    }
+
+    private checkPostOwnership(post: PostPersistence, currentUser: User) {
+        if (post.userId !== currentUser.id) {
+            throw new ForbiddenException(
+                'Users cannot delete posts from other users.',
+            );
+        }
+    }
+
+    private async deletePost(id: string) {
+        await this.db.post.delete({ where: { id } });
     }
 }
