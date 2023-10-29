@@ -6,10 +6,14 @@ import {
 } from 'src/constants/query.constant';
 import { PaginatedResponse } from 'src/types/paginated-response.type';
 import { PrismaService } from '../prisma/prisma.service';
+import { PostsService } from '../posts/posts.service';
 
 @Injectable()
 export class TimelineService {
-    constructor(private db: PrismaService) {}
+    constructor(
+        private readonly db: PrismaService,
+        private readonly postService: PostsService,
+    ) {}
 
     async timeline(currentUser: User, skip?: number, take?: number) {
         const whereCondition = {
@@ -58,23 +62,19 @@ export class TimelineService {
         // @TODO Refatorar.
         const posts = [];
         for (const post of timelinePosts) {
-            const liked = await this.userLikedPost(currentUser.id, post.id);
-            posts.push({ ...post, liked });
+            const liked = await this.postService.userLikedPost(
+                currentUser.id,
+                post.id,
+            );
+            const files = await this.postService.findFilesPost(post.id);
+
+            posts.push({ ...post, liked, files });
         }
 
         const count = await this.db.post.count({ where: whereCondition });
 
-        return { count, result: posts };
-    }
-
-    async userLikedPost(userId: string, postId: string): Promise<boolean> {
-        const like = await this.db.likes.findFirst({
-            where: {
-                userId: userId,
-                postId: postId,
-            },
-        });
-
-        return !!like;
+        return { count, result: posts } satisfies PaginatedResponse<
+            typeof posts
+        >;
     }
 }

@@ -52,13 +52,17 @@ export class PostsService {
             },
         });
         const userLiked = post.likes.length > 0;
+
         const replies = post.replies.map((e) => {
             const postObj = { ...e, userLiked: e.likes.length > 0 };
             omitObjectFields(postObj, ['likes']);
             return postObj;
         });
+
         const object: any = omitObjectFields(post, ['likes', 'replies']);
-        return { ...object, replies, userLiked };
+        const files = await this.findFilesPost(post.id);
+
+        return { ...object, replies, userLiked, files };
     }
 
     async create(
@@ -66,10 +70,6 @@ export class PostsService {
         createPostDto: CreatePostDto,
         currentUser: User,
     ) {
-        const uploadedFiles =
-            this.storage.uploadFilesAndGetStorageRecords(files);
-        // @TODO: Link the `uploadedFiles` with the post that will be created
-
         const user = await this.db.user.findUnique({
             where: { id: currentUser.id },
         });
@@ -81,6 +81,22 @@ export class PostsService {
             where: { id: currentUser.id },
             data: { postsCount },
         });
+
+        const uploadedFiles =
+            await this.storage.uploadFilesAndGetStorageRecords(files);
+
+        post['files'] = [];
+        for (const file of uploadedFiles) {
+            await this.db.storagePost.create({
+                data: {
+                    storageId: file.id,
+                    postId: post.id,
+                },
+            });
+
+            post['files'].push({ url: file.url });
+        }
+
         return post;
     }
 
@@ -213,5 +229,33 @@ export class PostsService {
 
     private async deletePost(id: string): Promise<void> {
         await this.db.post.delete({ where: { id } });
+    }
+
+    async userLikedPost(userId: string, postId: string): Promise<boolean> {
+        const like = await this.db.likes.findFirst({
+            where: {
+                userId: userId,
+                postId: postId,
+            },
+        });
+
+        return !!like;
+    }
+
+    async findFilesPost(postId: string) {
+        const files = await this.db.storagePost.findMany({
+            select: {
+                storage: {
+                    select: {
+                        url: true,
+                    },
+                },
+            },
+            where: {
+                postId: postId,
+            },
+        });
+
+        return files;
     }
 }

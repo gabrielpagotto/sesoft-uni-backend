@@ -6,13 +6,16 @@ import {
     Param,
     Post,
     Query,
+    UploadedFile,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { JwtGuard } from 'src/guards/jwt.guard';
 import { UsersService } from './users.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 @UseGuards(JwtGuard)
@@ -113,5 +116,25 @@ export class UsersController {
         @Query('take') take?: number,
     ) {
         return this.usersService.list(search, skip, take);
+    }
+
+    @Post('upload')
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Usuário criado com sucesso.',
+    })
+    @ApiResponse({
+        status: HttpStatus.BAD_REQUEST,
+        description:
+            'Nome de usuário inválido.\t\n Nome de usuário já utilizado.\t\n Email do usuário já utilizado.',
+        isArray: true,
+    })
+    @UseInterceptors(FileInterceptor('file'))
+    upload(
+        @CurrentUser() currentUser: User,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return this.usersService.uploadProfilePicture(currentUser, file);
     }
 }
