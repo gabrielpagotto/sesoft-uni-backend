@@ -82,19 +82,21 @@ export class PostsService {
             data: { postsCount },
         });
 
-        const uploadedFiles =
-            await this.storage.uploadFilesAndGetStorageRecords(files);
+        if (files) {
+            const uploadedFiles =
+                await this.storage.uploadFilesAndGetStorageRecords(files);
 
-        post['files'] = [];
-        for (const file of uploadedFiles) {
-            await this.db.storagePost.create({
-                data: {
-                    storageId: file.id,
-                    postId: post.id,
-                },
-            });
+            post['files'] = [];
+            for (const file of uploadedFiles) {
+                await this.db.storagePost.create({
+                    data: {
+                        storageId: file.id,
+                        postId: post.id,
+                    },
+                });
 
-            post['files'].push({ url: file.url });
+                post['files'].push({ url: file.url });
+            }
         }
 
         return post;

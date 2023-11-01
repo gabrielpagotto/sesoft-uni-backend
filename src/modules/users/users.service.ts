@@ -248,6 +248,9 @@ export class UsersService {
                 id: currentUser.id,
             },
         });
+        if (!file) {
+            throw new NotFoundException('File not found');
+        }
 
         if (!userFinded) {
             throw new NotFoundException('User not found');

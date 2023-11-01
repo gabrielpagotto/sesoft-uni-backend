@@ -75,9 +75,9 @@ export class StorageService {
                 });
 
                 storageRecords.push(storageRecord);
-
-                return storageRecords as R;
             }
+
+            return storageRecords as R;
         } else {
             const data = await this.uploadFileToStorage(files, storage);
 

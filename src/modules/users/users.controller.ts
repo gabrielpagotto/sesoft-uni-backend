@@ -129,6 +129,10 @@ export class UsersController {
         description: 'Usuário não encontrado.',
     })
     @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Arquivo não encontrado.',
+    })
+    @ApiResponse({
         status: HttpStatus.BAD_REQUEST,
         description: 'Foto de usuário inválida',
     })
