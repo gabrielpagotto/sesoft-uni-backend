@@ -43,12 +43,16 @@ export class PostsController {
         description: 'Cria uma nova postagem.',
     })
     @UseInterceptors(FilesInterceptor('files'))
-    create(
+    async create(
         @UploadedFiles() files: Array<Express.Multer.File>,
         @Body() createPostDto: CreatePostDto,
         @CurrentUser() currentUser: User,
     ) {
-        return this.postsService.create(files, createPostDto, currentUser);
+        return await this.postsService.create(
+            files,
+            createPostDto,
+            currentUser,
+        );
     }
 
     @Post(':id/reply')
