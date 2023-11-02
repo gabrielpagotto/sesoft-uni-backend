@@ -289,6 +289,20 @@ export class UsersService {
             where: {
                 userId: userId,
             },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        profile: {
+                            select: { id: true, displayName: true, icon: true },
+                        },
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
         });
 
         for (let i = 0; i < userPosts.length; i++) {
