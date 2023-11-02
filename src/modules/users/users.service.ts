@@ -4,7 +4,7 @@ import {
     NotAcceptableException,
     NotFoundException,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Post as PostPersistence, User } from '@prisma/client';
 import {
     DEFAULT_QUERY_SKIP,
     DEFAULT_QUERY_TAKE,
@@ -12,12 +12,14 @@ import {
 import { PaginatedResponse } from 'src/types/paginated-response.type';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { PostsService } from '../posts/posts.service';
 
 @Injectable()
 export class UsersService {
     constructor(
         private db: PrismaService,
         private readonly storage: StorageService,
+        private readonly postService: PostsService,
     ) {}
 
     async findById(id: string) {
@@ -270,5 +272,31 @@ export class UsersService {
         });
 
         return await this.me(currentUser);
+    }
+
+    async findUserPosts(userId: string): Promise<PostPersistence[]> {
+        if (
+            !(await this.db.user.findFirst({
+                where: {
+                    id: userId,
+                },
+            }))
+        ) {
+            throw new NotFoundException('User not found');
+        }
+
+        const userPosts = await this.db.post.findMany({
+            where: {
+                userId: userId,
+            },
+        });
+
+        for (let i = 0; i < userPosts.length; i++) {
+            userPosts[i]['files'] = await this.postService.findFilesPost(
+                userPosts[i].id,
+            );
+        }
+
+        return userPosts;
     }
 }

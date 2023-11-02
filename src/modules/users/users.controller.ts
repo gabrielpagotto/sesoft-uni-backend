@@ -108,6 +108,16 @@ export class UsersController {
         return this.usersService.following(currentUser, skip, take);
     }
 
+    @Get('me/posts')
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Usuário não encontrado.',
+    })
+    mePosts(@CurrentUser() currentUser: User) {
+        return this.usersService.findUserPosts(currentUser.id);
+    }
+
     @Get()
     @HttpCode(HttpStatus.OK)
     list(
@@ -119,9 +129,9 @@ export class UsersController {
     }
 
     @Post('upload')
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
-        status: HttpStatus.OK,
+        status: HttpStatus.CREATED,
         description: 'Foto de perfil criada com sucesso.',
     })
     @ApiResponse({
@@ -142,5 +152,15 @@ export class UsersController {
         @UploadedFile() file: Express.Multer.File,
     ) {
         return this.usersService.uploadProfilePicture(currentUser, file);
+    }
+
+    @Get(':id/posts')
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Usuário não encontrado.',
+    })
+    userPosts(@Param('id') id: string) {
+        return this.usersService.findUserPosts(id);
     }
 }
