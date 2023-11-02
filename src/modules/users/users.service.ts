@@ -274,7 +274,10 @@ export class UsersService {
         return await this.me(currentUser);
     }
 
-    async findUserPosts(userId: string): Promise<PostPersistence[]> {
+    async findUserPosts(
+        userId: string,
+        currentUserId: string,
+    ): Promise<PostPersistence[]> {
         if (
             !(await this.db.user.findFirst({
                 where: {
@@ -307,6 +310,11 @@ export class UsersService {
 
         for (let i = 0; i < userPosts.length; i++) {
             userPosts[i]['files'] = await this.postService.findFilesPost(
+                userPosts[i].id,
+            );
+
+            userPosts[i]['liked'] = await this.postService.userLikedPost(
+                currentUserId,
                 userPosts[i].id,
             );
         }

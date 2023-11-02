@@ -115,7 +115,7 @@ export class UsersController {
         description: 'Usuário não encontrado.',
     })
     mePosts(@CurrentUser() currentUser: User) {
-        return this.usersService.findUserPosts(currentUser.id);
+        return this.usersService.findUserPosts(currentUser.id, currentUser.id);
     }
 
     @Get()
@@ -160,7 +160,7 @@ export class UsersController {
         status: HttpStatus.NOT_FOUND,
         description: 'Usuário não encontrado.',
     })
-    userPosts(@Param('id') id: string) {
-        return this.usersService.findUserPosts(id);
+    userPosts(@Param('id') id: string, @CurrentUser() currentUser: User) {
+        return this.usersService.findUserPosts(id, currentUser.id);
     }
 }
