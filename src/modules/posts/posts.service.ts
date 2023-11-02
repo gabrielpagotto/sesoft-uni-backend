@@ -208,6 +208,22 @@ export class PostsService {
 
         await this.deletePost(id);
 
+        const user = await this.db.user.findFirst({
+            where: {
+                id: currentUser.id,
+            },
+        });
+
+        await this.db.user.update({
+            data: {
+                postsCount: user.postsCount - 1,
+                likesCount: user.postsCount - post.likesCount,
+            },
+            where: {
+                id: currentUser.id,
+            },
+        });
+
         return { deleted: true };
     }
 
