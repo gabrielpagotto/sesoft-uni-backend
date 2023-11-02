@@ -217,7 +217,7 @@ export class PostsService {
         await this.db.user.update({
             data: {
                 postsCount: user.postsCount - 1,
-                likesCount: user.postsCount - post.likesCount,
+                likesCount: user.likesCount - post.likesCount,
             },
             where: {
                 id: currentUser.id,
