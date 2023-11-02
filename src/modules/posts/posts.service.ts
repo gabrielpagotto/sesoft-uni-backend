@@ -276,4 +276,39 @@ export class PostsService {
 
         return files;
     }
+
+    async findPostsLikedByUser(userId: string, currentUserId: string) {
+        const postsLiked = await this.db.post.findMany({
+            where: {
+                likes: { some: { userId: userId } },
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        profile: {
+                            select: { id: true, displayName: true, icon: true },
+                        },
+                    },
+                },
+                likes: {
+                    orderBy: {
+                        createdAt: 'desc',
+                    },
+                },
+            },
+        });
+
+        for (let i = 0; i < postsLiked.length; i++) {
+            postsLiked[i]['files'] = await this.findFilesPost(postsLiked[i].id);
+
+            postsLiked[i]['liked'] = await this.userLikedPost(
+                currentUserId,
+                postsLiked[i].id,
+            );
+        }
+
+        return postsLiked;
+    }
 }

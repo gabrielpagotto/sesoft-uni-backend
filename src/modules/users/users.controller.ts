@@ -16,11 +16,15 @@ import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { JwtGuard } from 'src/guards/jwt.guard';
 import { UsersService } from './users.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { PostsService } from '../posts/posts.service';
 
 @Controller('users')
 @UseGuards(JwtGuard)
 export class UsersController {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(
+        private readonly usersService: UsersService,
+        private readonly postService: PostsService,
+    ) {}
 
     @Get('find/:id')
     @HttpCode(HttpStatus.OK)
@@ -108,16 +112,6 @@ export class UsersController {
         return this.usersService.following(currentUser, skip, take);
     }
 
-    @Get('me/posts')
-    @HttpCode(HttpStatus.OK)
-    @ApiResponse({
-        status: HttpStatus.NOT_FOUND,
-        description: 'Usuário não encontrado.',
-    })
-    mePosts(@CurrentUser() currentUser: User) {
-        return this.usersService.findUserPosts(currentUser.id, currentUser.id);
-    }
-
     @Get()
     @HttpCode(HttpStatus.OK)
     list(
@@ -162,5 +156,15 @@ export class UsersController {
     })
     userPosts(@Param('id') id: string, @CurrentUser() currentUser: User) {
         return this.usersService.findUserPosts(id, currentUser.id);
+    }
+
+    @Get(':id/posts/liked')
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Usuário não encontrado.',
+    })
+    userLiked(@Param('id') id: string, @CurrentUser() currentUser: User) {
+        return this.postService.findPostsLikedByUser(id, currentUser.id);
     }
 }
