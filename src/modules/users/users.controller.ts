@@ -6,18 +6,25 @@ import {
     Param,
     Post,
     Query,
+    UploadedFile,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { JwtGuard } from 'src/guards/jwt.guard';
 import { UsersService } from './users.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { PostsService } from '../posts/posts.service';
 
 @Controller('users')
 @UseGuards(JwtGuard)
 export class UsersController {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(
+        private readonly usersService: UsersService,
+        private readonly postService: PostsService,
+    ) {}
 
     @Get('find/:id')
     @HttpCode(HttpStatus.OK)
@@ -113,5 +120,51 @@ export class UsersController {
         @Query('take') take?: number,
     ) {
         return this.usersService.list(search, skip, take);
+    }
+
+    @Post('upload')
+    @HttpCode(HttpStatus.CREATED)
+    @ApiResponse({
+        status: HttpStatus.CREATED,
+        description: 'Foto de perfil criada com sucesso.',
+    })
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Usuário não encontrado.',
+    })
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Arquivo não encontrado.',
+    })
+    @ApiResponse({
+        status: HttpStatus.BAD_REQUEST,
+        description: 'Foto de usuário inválida',
+    })
+    @UseInterceptors(FileInterceptor('file'))
+    upload(
+        @CurrentUser() currentUser: User,
+        @UploadedFile() file: Express.Multer.File,
+    ) {
+        return this.usersService.uploadProfilePicture(currentUser, file);
+    }
+
+    @Get(':id/posts')
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Usuário não encontrado.',
+    })
+    userPosts(@Param('id') id: string, @CurrentUser() currentUser: User) {
+        return this.usersService.findUserPosts(id, currentUser.id);
+    }
+
+    @Get(':id/posts/liked')
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        status: HttpStatus.NOT_FOUND,
+        description: 'Usuário não encontrado.',
+    })
+    userLiked(@Param('id') id: string, @CurrentUser() currentUser: User) {
+        return this.postService.findPostsLikedByUser(id, currentUser.id);
     }
 }

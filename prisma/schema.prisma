@@ -48,9 +48,9 @@ model Post {
     user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId String? @map("user_id")
 
-    likes      Likes[]
-    likesCount Int       @default(0) @map("likes_count")
-    Storage    Storage[]
+    likes       Likes[]
+    likesCount  Int           @default(0) @map("likes_count")
+    StoragePost StoragePost[]
 
     @@map("posts")
 }
@@ -82,15 +82,25 @@ model Follow {
 }
 
 model Storage {
-    id           String    @id @unique @default(uuid())
+    id           String        @id @unique @default(uuid())
     url          String
-    createdAt    DateTime  @default(now()) @map("created_at")
-    updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
+    createdAt    DateTime      @default(now()) @map("created_at")
+    updatedAt    DateTime      @default(now()) @updatedAt @map("updated_at")
     profileIcons Profile[]
-    posts        Post      @relation(fields: [postId], references: [id])
-    postId       String    @map("post_id")
+    StoragePost  StoragePost[]
 
     @@map("storage")
+}
+
+model StoragePost {
+    id        String @id @unique @default(uuid())
+    postId    String @map("post_id")
+    storageId String @map("storage_id")
+
+    storage Storage @relation(fields: [storageId], references: [id], onDelete: Cascade)
+    posts   Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+    @@map("storage_post")
 }
 
 model Profile {

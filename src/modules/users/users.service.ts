@@ -4,17 +4,23 @@ import {
     NotAcceptableException,
     NotFoundException,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Post as PostPersistence, User } from '@prisma/client';
 import {
     DEFAULT_QUERY_SKIP,
     DEFAULT_QUERY_TAKE,
 } from 'src/constants/query.constant';
 import { PaginatedResponse } from 'src/types/paginated-response.type';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
+import { PostsService } from '../posts/posts.service';
 
 @Injectable()
 export class UsersService {
-    constructor(private db: PrismaService) {}
+    constructor(
+        private db: PrismaService,
+        private readonly storage: StorageService,
+        private readonly postService: PostsService,
+    ) {}
 
     async findById(id: string) {
         const user = await this.db.user.findUnique({
@@ -214,7 +220,6 @@ export class UsersService {
     }
 
     async me(currentUser: User) {
-        console.log(currentUser.id);
         const user = await this.db.user.findUnique({
             where: { id: currentUser.id },
             select: {
@@ -235,6 +240,85 @@ export class UsersService {
         if (!user) {
             throw new NotFoundException('User not found');
         }
+
         return user;
+    }
+
+    async uploadProfilePicture(currentUser: User, file: Express.Multer.File) {
+        const userFinded = await this.db.user.findFirst({
+            where: {
+                id: currentUser.id,
+            },
+        });
+        if (!file) {
+            throw new NotFoundException('File not found');
+        }
+
+        if (!userFinded) {
+            throw new NotFoundException('User not found');
+        }
+
+        const uploadedFile = await this.storage.uploadFilesAndGetStorageRecords(
+            file,
+        );
+
+        await this.db.profile.update({
+            where: {
+                id: currentUser.profileId,
+            },
+            data: {
+                iconStorageId: uploadedFile.id,
+            },
+        });
+
+        return await this.me(currentUser);
+    }
+
+    async findUserPosts(
+        userId: string,
+        currentUserId: string,
+    ): Promise<PostPersistence[]> {
+        if (
+            !(await this.db.user.findFirst({
+                where: {
+                    id: userId,
+                },
+            }))
+        ) {
+            throw new NotFoundException('User not found');
+        }
+
+        const userPosts = await this.db.post.findMany({
+            where: {
+                userId: userId,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        profile: {
+                            select: { id: true, displayName: true, icon: true },
+                        },
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+
+        for (let i = 0; i < userPosts.length; i++) {
+            userPosts[i]['files'] = await this.postService.findFilesPost(
+                userPosts[i].id,
+            );
+
+            userPosts[i]['liked'] = await this.postService.userLikedPost(
+                currentUserId,
+                userPosts[i].id,
+            );
+        }
+
+        return userPosts;
     }
 }

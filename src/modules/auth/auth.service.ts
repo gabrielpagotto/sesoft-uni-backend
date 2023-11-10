@@ -14,7 +14,10 @@ import { SignupAuthDto } from './dto/signup-auth.dto';
 
 @Injectable()
 export class AuthService {
-    constructor(private db: PrismaService, private jwtService: JwtService) {}
+    constructor(
+        private readonly db: PrismaService,
+        private readonly jwtService: JwtService,
+    ) {}
 
     async validateUserCredentials(
         email: string,
