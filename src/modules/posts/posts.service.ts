@@ -5,6 +5,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { Post as PostPersistence, User } from '@prisma/client';
+import { listPostSelector } from 'src/constants/selectors.constant';
 import { omitObjectFields } from 'src/helpers/object.helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -12,7 +13,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 
 @Injectable()
 export class PostsService {
-    constructor(private db: PrismaService, private storage: StorageService) {}
+    constructor(private db: PrismaService, private storage: StorageService) { }
 
     async findOne(id: string, currentUser: User) {
         if (!(await this.db.post.findUnique({ where: { id } }))) {
@@ -29,23 +30,7 @@ export class PostsService {
                     },
                 },
                 replies: {
-                    select: {
-                        id: true,
-                        content: true,
-                        createdAt: true,
-                        updatedAt: true,
-                        likesCount: true,
-                        user: {
-                            select: {
-                                id: true,
-                                username: true,
-                                profile: {
-                                    select: { id: true, displayName: true },
-                                },
-                            },
-                        },
-                        likes: { where: { userId: currentUser.id } },
-                    },
+                    select: listPostSelector,
                     orderBy: { createdAt: 'asc' },
                 },
                 likes: { where: { userId: currentUser.id } },
