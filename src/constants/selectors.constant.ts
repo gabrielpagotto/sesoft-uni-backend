@@ -5,6 +5,7 @@ export const listPostSelector = {
     updatedAt: true,
     likesCount: true,
     repliesCount: true,
+    likes: true,
     user: {
         select: {
             id: true,
