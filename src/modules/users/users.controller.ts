@@ -10,13 +10,13 @@ import {
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiResponse } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { JwtGuard } from 'src/guards/jwt.guard';
-import { UsersService } from './users.service';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { PostsService } from '../posts/posts.service';
+import { UsersService } from './users.service';
 
 @Controller('users')
 @UseGuards(JwtGuard)
@@ -24,7 +24,7 @@ export class UsersController {
     constructor(
         private readonly usersService: UsersService,
         private readonly postService: PostsService,
-    ) {}
+    ) { }
 
     @Get('find/:id')
     @HttpCode(HttpStatus.OK)
@@ -115,11 +115,12 @@ export class UsersController {
     @Get()
     @HttpCode(HttpStatus.OK)
     list(
+        @CurrentUser() currentUser: User,
         @Query('search') search?: string,
         @Query('skip') skip?: number,
         @Query('take') take?: number,
     ) {
-        return this.usersService.list(search, skip, take);
+        return this.usersService.list(currentUser, search, skip, take);
     }
 
     @Post('upload')

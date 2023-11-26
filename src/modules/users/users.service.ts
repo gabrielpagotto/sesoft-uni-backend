@@ -4,15 +4,16 @@ import {
     NotAcceptableException,
     NotFoundException,
 } from '@nestjs/common';
-import { Post as PostPersistence, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import {
     DEFAULT_QUERY_SKIP,
     DEFAULT_QUERY_TAKE,
 } from 'src/constants/query.constant';
+import { omitObjectFields } from 'src/helpers/object.helper';
 import { PaginatedResponse } from 'src/types/paginated-response.type';
+import { PostsService } from '../posts/posts.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
-import { PostsService } from '../posts/posts.service';
 
 @Injectable()
 export class UsersService {
@@ -20,7 +21,7 @@ export class UsersService {
         private db: PrismaService,
         private readonly storage: StorageService,
         private readonly postService: PostsService,
-    ) {}
+    ) { }
 
     async findById(id: string) {
         const user = await this.db.user.findUnique({
@@ -193,7 +194,12 @@ export class UsersService {
         return { count, result } satisfies PaginatedResponse<typeof result>;
     }
 
-    async list(search?: string, skip?: number, take?: number) {
+    async list(
+        currentUser: User,
+        search?: string,
+        skip?: number,
+        take?: number,
+    ) {
         const whereCondition = {
             OR: [
                 { username: { contains: search } },
@@ -209,14 +215,31 @@ export class UsersService {
                 profile: {
                     select: { displayName: true, bio: true, icon: true },
                 },
+                followed: {
+                    where: { userFollowingId: currentUser.id },
+                },
+                following: {
+                    where: { userFollowedId: currentUser.id },
+                },
             },
             skip: !skip ? DEFAULT_QUERY_SKIP : Number(skip),
             take: !take ? DEFAULT_QUERY_TAKE : Number(take),
         });
+        const usersWithExtraArgs = users.map((e) => {
+            const extra = {
+                youFollow: !!e.followed && e.followed.length > 0,
+                follingYou: !!e.following && e.following.length > 0,
+            };
+            return {
+                ...omitObjectFields(e, ['followed', 'following']),
+                extra,
+            };
+        });
         const count = await this.db.user.count({ where: whereCondition });
-        return { count, result: users } satisfies PaginatedResponse<
-            typeof users
-        >;
+        return {
+            count,
+            result: usersWithExtraArgs,
+        } satisfies PaginatedResponse<typeof usersWithExtraArgs>;
     }
 
     async me(currentUser: User) {
@@ -274,10 +297,7 @@ export class UsersService {
         return await this.me(currentUser);
     }
 
-    async findUserPosts(
-        userId: string,
-        currentUserId: string,
-    ): Promise<PostPersistence[]> {
+    async findUserPosts(userId: string, currentUserId: string) {
         if (
             !(await this.db.user.findFirst({
                 where: {

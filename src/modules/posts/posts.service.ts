@@ -13,7 +13,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 
 @Injectable()
 export class PostsService {
-    constructor(private db: PrismaService, private storage: StorageService) { }
+    constructor(private db: PrismaService, private storage: StorageService) {}
 
     async findOne(id: string, currentUser: User) {
         if (!(await this.db.post.findUnique({ where: { id } }))) {
@@ -26,7 +26,9 @@ export class PostsService {
                     select: {
                         id: true,
                         username: true,
-                        profile: { select: { id: true, displayName: true } },
+                        profile: {
+                            select: { id: true, displayName: true, icon: true },
+                        },
                     },
                 },
                 replies: {
