@@ -112,6 +112,35 @@ export class UsersController {
         return this.usersService.following(currentUser, skip, take);
     }
 
+    @Get(':id/followers')
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: 'Busca os seguidores do usuário especificado pelo id.',
+    })
+    followersUsersById(
+        @Param('id') id: string,
+        @Query('skip') skip?: number,
+        @Query('take') take?: number,
+    ) {
+        return this.usersService.followersUsersById(id, skip, take);
+    }
+
+    @Get(':id/following')
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description:
+            'Busca os usuários que o usuário especificado pelo id segue.',
+    })
+    followingUsersById(
+        @Param('id') id: string,
+        @Query('skip') skip?: number,
+        @Query('take') take?: number,
+    ) {
+        return this.usersService.followingUsersById(id, skip, take);
+    }
+
     @Get()
     @HttpCode(HttpStatus.OK)
     list(
