@@ -2,18 +2,23 @@ import {
     BadRequestException,
     ForbiddenException,
     Injectable,
-    NotFoundException,
+    NotFoundException
 } from '@nestjs/common';
 import { Post as PostPersistence, User } from '@prisma/client';
 import { listPostSelector } from 'src/constants/selectors.constant';
 import { omitObjectFields } from 'src/helpers/object.helper';
 import { PrismaService } from '../prisma/prisma.service';
+import { SocketGateway } from '../socket/socket.gateway';
 import { StorageService } from '../storage/storage.service';
 import { CreatePostDto } from './dto/create-post.dto';
 
 @Injectable()
 export class PostsService {
-    constructor(private db: PrismaService, private storage: StorageService) { }
+    constructor(
+        private db: PrismaService,
+        private storage: StorageService,
+        private socketGateway: SocketGateway,
+    ) { }
 
     async findOne(id: string, currentUser: User) {
         if (!(await this.db.post.findUnique({ where: { id } }))) {
@@ -85,7 +90,7 @@ export class PostsService {
                 post['files'].push({ url: file.url });
             }
         }
-
+        this.socketGateway.sendEventToAll('new-post-created');
         return post;
     }
 
