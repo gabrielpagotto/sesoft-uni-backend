@@ -124,6 +124,7 @@ export class PostsService {
             where: { id: parentPostId },
             data: { repliesCount: parentPost.repliesCount + 1 },
         });
+        this.socketGateway.sendEventToAll('new-post-created');
         return post;
     }
 
