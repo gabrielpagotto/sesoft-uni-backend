@@ -266,9 +266,18 @@ export class PostsService {
     }
 
     async findPostsLikedByUser(userId: string, currentUserId: string) {
+        const likedPostsIds = await this.db.likes.findMany({
+            where: {
+                userId: userId,
+            },
+            select: {
+                postId: true,
+            },
+        });
+
         const postsLiked = await this.db.post.findMany({
             where: {
-                likes: { some: { userId: userId } },
+                id: { in: likedPostsIds.map((like) => like.postId) },
             },
             include: {
                 user: {
@@ -281,13 +290,19 @@ export class PostsService {
                     },
                 },
                 likes: {
+                    where: { userId: userId },
                     orderBy: {
-                        createdAt: 'desc',
+                        createdAt: 'asc',
                     },
                 },
             },
+            orderBy: {
+                // Se os likes estiverem aninhados em um relacionamento, você pode precisar
+                // especificar o campo no orderBy para a ordenação final
+                // Exemplo: 'likes.createdAt': 'asc'
+                createdAt: 'asc',
+            },
         });
-
         for (let i = 0; i < postsLiked.length; i++) {
             postsLiked[i]['files'] = await this.findFilesPost(postsLiked[i].id);
 
