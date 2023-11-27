@@ -341,4 +341,61 @@ export class UsersService {
 
         return userPosts;
     }
+
+    async followersUsersById(id: string, skip?: number, take?: number) {
+        const whereCondition = { userFollowedId: id };
+        const followers = await this.db.follow.findMany({
+            where: whereCondition,
+            skip: !skip ? DEFAULT_QUERY_SKIP : Number(skip),
+            take: !take ? DEFAULT_QUERY_TAKE : Number(take),
+            include: {
+                userFollowing: {
+                    select: {
+                        id: true,
+                        email: true,
+                        username: true,
+                        profile: {
+                            select: {
+                                displayName: true,
+                                bio: true,
+                                icon: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const result = followers.map((e) => e.userFollowing);
+        const count = await this.db.follow.count({ where: whereCondition });
+        return { count, result } satisfies PaginatedResponse<typeof result>;
+    }
+
+    async followingUsersById(id: string, skip?: number, take?: number) {
+        const whereCondition = { userFollowingId: id };
+        const following = await this.db.follow.findMany({
+            where: whereCondition,
+            skip: !skip ? DEFAULT_QUERY_SKIP : Number(skip),
+            take: !take ? DEFAULT_QUERY_TAKE : Number(take),
+            include: {
+                userFollowed: {
+                    select: {
+                        id: true,
+                        email: true,
+                        username: true,
+                        profile: {
+                            select: {
+                                displayName: true,
+                                bio: true,
+                                icon: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        const result = following.map((e) => e.userFollowed);
+        const count = await this.db.follow.count({ where: whereCondition });
+        return { count, result } satisfies PaginatedResponse<typeof result>;
+    }
 }
