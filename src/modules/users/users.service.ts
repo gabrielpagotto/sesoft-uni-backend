@@ -23,7 +23,7 @@ export class UsersService {
         private readonly postService: PostsService,
     ) { }
 
-    async findById(id: string) {
+    async findById(id: string, currentUser: User) {
         const user = await this.db.user.findUnique({
             where: { id },
             select: {
@@ -39,12 +39,28 @@ export class UsersService {
                 profile: {
                     include: { icon: true },
                 },
+                followed: {
+                    where: {
+                        userFollowedId: id,
+                        userFollowingId: currentUser.id,
+                    },
+                },
+                following: {
+                    where: {
+                        userFollowedId: currentUser.id,
+                        userFollowingId: id,
+                    },
+                },
             },
         });
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        return user;
+        const extra = {
+            youFollow: !!user.followed && user.followed.length > 0,
+            follingYou: !!user.following && user.following.length > 0,
+        };
+        return omitObjectFields({ ...user, extra }, ['followed', 'following']);
     }
 
     async follow(id: string, currentUser: User) {

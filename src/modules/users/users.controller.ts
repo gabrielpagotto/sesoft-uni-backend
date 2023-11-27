@@ -32,8 +32,8 @@ export class UsersController {
         status: HttpStatus.NOT_FOUND,
         description: 'Usuário não encontrado.',
     })
-    findById(@Param('id') id: string) {
-        return this.usersService.findById(id);
+    findById(@Param('id') id: string, @CurrentUser() currentUser: User) {
+        return this.usersService.findById(id, currentUser);
     }
 
     @Post(':id/follow')
