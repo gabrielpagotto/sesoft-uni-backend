@@ -296,7 +296,7 @@ export class PostsService {
                 },
             },
             orderBy: {
-                createdAt: 'asc',
+                createdAt: 'desc',
             },
         });
 
