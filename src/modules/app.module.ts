@@ -6,6 +6,8 @@ import { NotificationsService } from './notifications/notifications.service';
 import { PostsModule } from './posts/posts.module';
 import { PrismaService } from './prisma/prisma.service';
 import { ProfileModule } from './profile/profile.module';
+import { SocketGateway } from './socket/socket.gateway';
+import { SocketModule } from './socket/socket.module';
 import { StorageService } from './storage/storage.service';
 import { TimelineModule } from './timeline/timeline.module';
 import { UsersModule } from './users/users.module';
@@ -13,6 +15,7 @@ import { UsersModule } from './users/users.module';
 @Module({
     imports: [
         AuthModule,
+        SocketModule,
         PostsModule,
         UsersModule,
         TimelineModule,
@@ -27,6 +30,7 @@ import { UsersModule } from './users/users.module';
         },
         StorageService,
         NotificationsService,
+        SocketGateway,
     ],
 })
 export class AppModule { }
