@@ -300,12 +300,10 @@ export class PostsService {
             },
         });
 
-        const posts = likedPosts.map((e) => ({ ...e.post }));
+        const posts = likedPosts.map((e) => e.post);
 
         for (let i = 0; i < posts.length; i++) {
-            posts[i]['post']['files'] = await this.findFilesPost(
-                posts[i]['post'].id,
-            );
+            posts[i]['files'] = await this.findFilesPost(posts[i].id);
 
             posts[i]['liked'] = await this.userLikedPost(
                 currentUserId,
