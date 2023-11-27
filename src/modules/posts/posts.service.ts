@@ -297,10 +297,7 @@ export class PostsService {
                 },
             },
             orderBy: {
-                // Se os likes estiverem aninhados em um relacionamento, você pode precisar
-                // especificar o campo no orderBy para a ordenação final
-                // Exemplo: 'likes.createdAt': 'asc'
-                createdAt: 'asc',
+                createdAt: 'desc',
             },
         });
         for (let i = 0; i < postsLiked.length; i++) {
