@@ -5,12 +5,19 @@ import { AuthModule } from './auth/auth.module';
 import { NotificationsService } from './notifications/notifications.service';
 import { PostsModule } from './posts/posts.module';
 import { PrismaService } from './prisma/prisma.service';
+import { ProfileModule } from './profile/profile.module';
 import { StorageService } from './storage/storage.service';
 import { TimelineModule } from './timeline/timeline.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
-    imports: [AuthModule, PostsModule, UsersModule, TimelineModule],
+    imports: [
+        AuthModule,
+        PostsModule,
+        UsersModule,
+        TimelineModule,
+        ProfileModule,
+    ],
     controllers: [],
     providers: [
         PrismaService,
@@ -22,4 +29,4 @@ import { UsersModule } from './users/users.module';
         NotificationsService,
     ],
 })
-export class AppModule {}
+export class AppModule { }
