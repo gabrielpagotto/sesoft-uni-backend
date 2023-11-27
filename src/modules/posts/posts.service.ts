@@ -266,49 +266,53 @@ export class PostsService {
     }
 
     async findPostsLikedByUser(userId: string, currentUserId: string) {
-        const likedPostsIds = await this.db.likes.findMany({
+        const likedPosts = await this.db.likes.findMany({
             where: {
                 userId: userId,
             },
-            select: {
-                postId: true,
-            },
-        });
-
-        const postsLiked = await this.db.post.findMany({
-            where: {
-                id: { in: likedPostsIds.map((like) => like.postId) },
-            },
             include: {
-                user: {
-                    select: {
-                        id: true,
-                        username: true,
-                        profile: {
-                            select: { id: true, displayName: true, icon: true },
+                post: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                profile: {
+                                    select: {
+                                        id: true,
+                                        displayName: true,
+                                        icon: true,
+                                    },
+                                },
+                            },
                         },
-                    },
-                },
-                likes: {
-                    where: { userId: userId },
-                    orderBy: {
-                        createdAt: 'asc',
+                        likes: {
+                            where: { userId: userId },
+                            orderBy: {
+                                createdAt: 'asc',
+                            },
+                        },
                     },
                 },
             },
             orderBy: {
-                createdAt: 'desc',
+                createdAt: 'asc',
             },
         });
-        for (let i = 0; i < postsLiked.length; i++) {
-            postsLiked[i]['files'] = await this.findFilesPost(postsLiked[i].id);
 
-            postsLiked[i]['liked'] = await this.userLikedPost(
+        const posts = likedPosts.map((e) => ({ ...e.post }));
+
+        for (let i = 0; i < posts.length; i++) {
+            posts[i]['post']['files'] = await this.findFilesPost(
+                posts[i]['post'].id,
+            );
+
+            posts[i]['liked'] = await this.userLikedPost(
                 currentUserId,
-                postsLiked[i].id,
+                posts[i].id,
             );
         }
 
-        return postsLiked;
+        return posts;
     }
 }
